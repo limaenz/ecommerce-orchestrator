@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Enzo Lima</Authors>
+    <Company>limaenz</Company>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year) $(Authors)</Copyright>
+  </PropertyGroup>
+</Project>
