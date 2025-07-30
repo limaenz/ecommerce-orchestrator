@@ -2,9 +2,10 @@
   <PropertyGroup>
     <AspNetCoreVersion>8.0.17</AspNetCoreVersion>
   </PropertyGroup>
-  
   <ItemGroup>
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.5.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 </Project>

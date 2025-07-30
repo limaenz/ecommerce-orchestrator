@@ -1,3 +1,9 @@
+using System.Text;
+
+using RabbitMQ.Client;
+
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,35 +16,36 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "/openapi/{documentName}.json";
+    });
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+var apiGroup = app.MapGroup("api");
 
-app.MapGet("/weatherforecast", () =>
+apiGroup.MapPost("/order", async (OrderDto orderDto) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var factory = new ConnectionFactory { HostName = "localhost" };
+    using var connection = await factory.CreateConnectionAsync();
+    using var channel = await connection.CreateChannelAsync();
+
+    await channel.QueueDeclareAsync(queue: "hello", durable: false, exclusive: false, autoDelete: false,
+        arguments: null);
+
+    const string message = "Hello World!";
+    var body = Encoding.UTF8.GetBytes(message);
+
+    await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "hello", body: body);
+
+    return Results.Accepted();
 })
-.WithName("GetWeatherForecast")
+.WithName("CreateOrder")
 .WithOpenApi();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public record OrderDto(string Product, int Quantity);
