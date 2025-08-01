@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 using RabbitMQ.Client;
 
@@ -30,16 +31,33 @@ var apiGroup = app.MapGroup("api");
 apiGroup.MapPost("/order", async (OrderDto orderDto) =>
 {
     var factory = new ConnectionFactory { HostName = "localhost" };
+
     using var connection = await factory.CreateConnectionAsync();
     using var channel = await connection.CreateChannelAsync();
 
-    await channel.QueueDeclareAsync(queue: "hello", durable: false, exclusive: false, autoDelete: false,
-        arguments: null);
+    await channel.QueueDeclareAsync(
+        queue: "OrderCreated",
+        durable: true,
+        exclusive: false,
+        autoDelete: false,
+        arguments: null
+    );
 
-    const string message = "Hello World!";
-    var body = Encoding.UTF8.GetBytes(message);
+    var json = JsonSerializer.Serialize(orderDto);
+    var body = Encoding.UTF8.GetBytes(json);
 
-    await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "hello", body: body);
+    var properties = new BasicProperties()
+    {
+        Persistent = true,
+    };
+
+    await channel.BasicPublishAsync(
+        exchange: string.Empty,
+        routingKey: "OrderCreated",
+        mandatory: false,
+        basicProperties: properties,
+        body: body
+        );
 
     return Results.Accepted();
 })
@@ -48,4 +66,4 @@ apiGroup.MapPost("/order", async (OrderDto orderDto) =>
 
 app.Run();
 
-public record OrderDto(string Product, int Quantity);
+public record OrderDto(int Id, string ProductName, decimal Price, int Quantity);
