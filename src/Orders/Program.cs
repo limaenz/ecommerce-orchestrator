@@ -1,5 +1,6 @@
-using System.Text;
-using System.Text.Json;
+using ECommerce.Orders.Api.Endpoints;
+using ECommerce.Shared.Messaging.Interfaces;
+using ECommerce.Shared.Services;
 
 using RabbitMQ.Client;
 
@@ -9,6 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var rabbitUri = builder.Configuration["RabbitMqConnection"]
+                ?? "amqp://guest:guest@localhost:5672/%2F";
+
+builder.Services.AddSingleton<IConnectionFactory>(_ =>
+    new ConnectionFactory
+    {
+        Uri = new Uri(rabbitUri),
+    });
+
+builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 
 var app = builder.Build();
 
@@ -22,42 +34,6 @@ app.UseHttpsRedirection();
 
 var apiGroup = app.MapGroup("api");
 
-apiGroup.MapPost("/order", async (OrderDto orderDto) =>
-{
-    var factory = new ConnectionFactory { HostName = "localhost" };
-
-    using var connection = await factory.CreateConnectionAsync();
-    using var channel = await connection.CreateChannelAsync();
-
-    await channel.QueueDeclareAsync(
-        queue: "OrderCreated",
-        durable: true,
-        exclusive: false,
-        autoDelete: false,
-        arguments: null
-    );
-
-    var json = JsonSerializer.Serialize(orderDto);
-    var body = Encoding.UTF8.GetBytes(json);
-
-    var properties = new BasicProperties()
-    {
-        Persistent = true,
-    };
-
-    await channel.BasicPublishAsync(
-        exchange: string.Empty,
-        routingKey: "OrderCreated",
-        mandatory: false,
-        basicProperties: properties,
-        body: body
-        );
-
-    return Results.Accepted();
-})
-.WithName("CreateOrder")
-.WithOpenApi();
+OrderEndpoints.Map(apiGroup);
 
 app.Run();
-
-public record OrderDto(int Id, string ProductName, decimal Price, int Quantity);

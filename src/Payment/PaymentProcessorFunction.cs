@@ -1,52 +1,26 @@
-using System.Text;
+using ECommerce.Shared.Messaging.Interfaces;
 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-
-using RabbitMQ.Client;
 
 namespace ECommerce.Payment.Functions;
 
 public class PaymentProcessorFunction
 {
     private readonly ILogger _logger;
+    private readonly IRabbitMQService _rabbitMQService;
 
-    public PaymentProcessorFunction(ILoggerFactory loggerFactory)
+    public PaymentProcessorFunction(ILoggerFactory loggerFactory, IRabbitMQService rabbitMQService)
     {
         _logger = loggerFactory.CreateLogger<PaymentProcessorFunction>();
+        _rabbitMQService = rabbitMQService;
     }
 
     [Function("ProcessPayment")]
     public async Task RunAsync([RabbitMQTrigger("StockVerified", ConnectionStringSetting = "RabbitMqConnection")] string stockMessage)
     {
-        _logger.LogInformation("C# Queue trigger function processed: {item}", stockMessage);
+        //TODO: CREATE PROCESS PAYMENT RULE
 
-        var factory = new ConnectionFactory { HostName = "localhost" };
-
-        using var connection = await factory.CreateConnectionAsync();
-        using var channel = await connection.CreateChannelAsync();
-
-        await channel.QueueDeclareAsync(
-            queue: "PaymentApproved",
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        );
-
-        var body = Encoding.UTF8.GetBytes("TESTE");
-
-        var properties = new BasicProperties()
-        {
-            Persistent = true,
-        };
-
-        await channel.BasicPublishAsync(
-            exchange: string.Empty,
-            routingKey: "PaymentApproved",
-            mandatory: false,
-            basicProperties: properties,
-            body: body
-            );
+        await _rabbitMQService.PublishAsync(stockMessage, "PaymentApproved");
     }
 }
