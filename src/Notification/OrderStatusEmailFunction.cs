@@ -15,8 +15,6 @@ public class OrderStatusEmailFunction
     [Function("SendEmail")]
     public void Run([RabbitMQTrigger("PaymentApproved", ConnectionStringSetting = "RabbitMqConnection")] string myQueueItem)
     {
-        _logger.LogInformation("C# Queue trigger function processed: {item}", myQueueItem);
-
         //TODO: ENVIAR NOTIFIACAO SIGNALR AO FRONT END
     }
 }
