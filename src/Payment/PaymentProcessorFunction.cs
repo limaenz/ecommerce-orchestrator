@@ -8,12 +8,12 @@ namespace ECommerce.Payment.Functions;
 public class PaymentProcessorFunction
 {
     private readonly ILogger _logger;
-    private readonly IRabbitMQService _rabbitMQService;
+    private readonly IRabbitMQService _rabbitMqService;
 
-    public PaymentProcessorFunction(ILoggerFactory loggerFactory, IRabbitMQService rabbitMQService)
+    public PaymentProcessorFunction(ILoggerFactory loggerFactory, IRabbitMQService rabbitMqService)
     {
         _logger = loggerFactory.CreateLogger<PaymentProcessorFunction>();
-        _rabbitMQService = rabbitMQService;
+        _rabbitMqService = rabbitMqService;
     }
 
     [Function("ProcessPayment")]
@@ -21,6 +21,6 @@ public class PaymentProcessorFunction
     {
         //TODO: CREATE PROCESS PAYMENT RULE
 
-        await _rabbitMQService.PublishAsync(stockMessage, "PaymentApproved");
+        await _rabbitMqService.PublishAsync(stockMessage, "PaymentApproved");
     }
 }
