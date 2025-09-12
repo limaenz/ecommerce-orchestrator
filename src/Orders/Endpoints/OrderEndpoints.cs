@@ -7,7 +7,7 @@ public static class OrderEndpoints
 {
     public static void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.Map("/order", CreateOrder)
+        groupBuilder.MapPost("/order", CreateOrder)
             .WithName("CreateOrder")
             .WithOpenApi();
     }

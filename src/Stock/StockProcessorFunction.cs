@@ -10,12 +10,12 @@ namespace ECommerce.Stock.Functions;
 public class StockProcessorFunction
 {
     private readonly ILogger _logger;
-    private readonly IRabbitMQService _rabbitMQService;
+    private readonly IRabbitMQService _rabbitMqService;
 
-    public StockProcessorFunction(ILoggerFactory loggerFactory, IRabbitMQService rabbitMQService)
+    public StockProcessorFunction(ILoggerFactory loggerFactory, IRabbitMQService rabbitMqService)
     {
         _logger = loggerFactory.CreateLogger<StockProcessorFunction>();
-        _rabbitMQService = rabbitMQService;
+        _rabbitMqService = rabbitMqService;
     }
 
     [Function("CheckStock")]
@@ -23,6 +23,6 @@ public class StockProcessorFunction
     {
         //TODO: CREATE PROCESS STOCK RULE
 
-        await _rabbitMQService.PublishAsync(orderMessage, "StockVerified");
+        await _rabbitMqService.PublishAsync(orderMessage, "StockVerified");
     }
 }

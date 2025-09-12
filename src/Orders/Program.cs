@@ -33,7 +33,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 var apiGroup = app.MapGroup("api");
-
 OrderEndpoints.Map(apiGroup);
 
 app.Run();
